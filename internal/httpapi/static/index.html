@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>副作用 AI 分诊</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body data-page="input">
+    <header class="topbar">
+      <a class="brand" href="/">副作用 AI 分诊</a>
+      <nav>
+        <a href="/">输入</a>
+        <a href="/history">历史</a>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section class="workspace">
+        <div class="pane pane-main">
+          <div class="section-title">
+            <span>症状描述</span>
+            <span class="rule-version">rules v0.1.0</span>
+          </div>
+
+          <form id="assessment-form" class="form">
+            <label>
+              用户 ID
+              <input id="user-id" name="user_id" value="demo-user" autocomplete="off" />
+            </label>
+
+            <label>
+              副作用描述
+              <textarea
+                id="description"
+                name="description"
+                rows="8"
+                placeholder="例如：我今天发热 38.5 度，还有寒战"
+                required
+              ></textarea>
+            </label>
+
+            <div class="examples" aria-label="示例">
+              <button type="button" class="ghost small" data-example="我今天发热 38.5 度，还有寒战">高风险示例</button>
+              <button type="button" class="ghost small" data-example="我有点恶心，腹泻了两次，但还能喝水">中风险示例</button>
+              <button type="button" class="ghost small" data-example="我最近轻微脱发，有点乏力">低风险示例</button>
+              <button type="button" class="ghost small" data-example="我有点发烧">追问示例</button>
+            </div>
+
+            <section id="followup-panel" class="followup hidden">
+              <div class="section-title compact">
+                <span>AI 追问</span>
+                <span>最多 3 项</span>
+              </div>
+              <ol id="followup-questions"></ol>
+              <label>
+                补充回答
+                <textarea id="followup-answer" rows="4" placeholder="补充体温、持续时间、饮水、治疗背景等信息"></textarea>
+              </label>
+              <a id="current-result-link" class="inline-link hidden" href="#">查看当前规则结果</a>
+            </section>
+
+            <div class="actions">
+              <button type="submit" class="primary">提交评估</button>
+              <span id="submit-status" class="status"></span>
+            </div>
+          </form>
+        </div>
+
+        <aside class="pane">
+          <div class="section-title">
+            <span>安全边界</span>
+          </div>
+          <ul class="compact-list">
+            <li>AI 负责理解、追问、解释和摘要。</li>
+            <li>最终风险等级由规则引擎判定。</li>
+            <li>高风险会保留线下就医或 24h 联系团队路径。</li>
+            <li>本原型不替代医生诊断。</li>
+          </ul>
+        </aside>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

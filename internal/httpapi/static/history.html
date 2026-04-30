@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>历史记录</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body data-page="history">
+    <header class="topbar">
+      <a class="brand" href="/">副作用 AI 分诊</a>
+      <nav>
+        <a href="/">输入</a>
+        <a href="/history">历史</a>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section class="pane">
+        <div class="history-head">
+          <div class="section-title">
+            <span>历史记录</span>
+          </div>
+          <form id="history-form" class="history-form">
+            <input id="history-user-id" value="demo-user" autocomplete="off" />
+            <button type="submit" class="primary">查询</button>
+          </form>
+        </div>
+        <div id="history-list" class="history-list"></div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

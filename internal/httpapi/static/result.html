@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>评估结果</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body data-page="result">
+    <header class="topbar">
+      <a class="brand" href="/">副作用 AI 分诊</a>
+      <nav>
+        <a href="/">输入</a>
+        <a href="/history">历史</a>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section id="result-root" class="workspace result-layout">
+        <div class="pane pane-main">
+          <div class="section-title">
+            <span>评估结果</span>
+            <span id="generated-at">-</span>
+          </div>
+          <div class="risk-row">
+            <span id="risk-badge" class="risk risk-low">-</span>
+            <span id="contact-hint" class="contact-hint">-</span>
+          </div>
+          <p id="user-explanation" class="explanation">加载中...</p>
+
+          <div class="section-title compact">
+            <span>下一步建议</span>
+          </div>
+          <ul id="next-steps" class="step-list"></ul>
+
+          <div class="actions">
+            <button id="contact-team" type="button" class="primary">联系团队</button>
+            <button id="close-assessment" type="button" class="ghost">关闭评估</button>
+            <span id="result-status" class="status"></span>
+          </div>
+
+          <section id="handoff-panel" class="handoff hidden">
+            <div class="section-title compact">
+              <span>团队交接摘要</span>
+            </div>
+            <p id="handoff-summary"></p>
+          </section>
+        </div>
+
+        <aside class="pane">
+          <div class="section-title">
+            <span>审计信息</span>
+          </div>
+          <dl class="audit-grid">
+            <dt>评估 ID</dt>
+            <dd id="audit-id">-</dd>
+            <dt>命中规则</dt>
+            <dd id="audit-rule">-</dd>
+            <dt>规则版本</dt>
+            <dd id="audit-version">-</dd>
+            <dt>命中关键词</dt>
+            <dd id="audit-keywords">-</dd>
+            <dt>AI 信号</dt>
+            <dd id="audit-signals">-</dd>
+            <dt>生成模块</dt>
+            <dd id="audit-ai">-</dd>
+          </dl>
+
+          <div class="section-title compact">
+            <span>AI 结构化摘要</span>
+          </div>
+          <p id="ai-summary" class="muted">-</p>
+        </aside>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
