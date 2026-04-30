@@ -44,6 +44,15 @@ func NewAnalyzerFromEnv() *Analyzer {
 	}
 }
 
+func NewOfflineAnalyzer() *Analyzer {
+	return &Analyzer{
+		model: "heuristic-fallback",
+		httpClient: &http.Client{
+			Timeout: 20 * time.Second,
+		},
+	}
+}
+
 func (a *Analyzer) Enabled() bool {
 	return a != nil && a.apiKey != ""
 }

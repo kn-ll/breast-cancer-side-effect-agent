@@ -19,7 +19,7 @@ func TestSubmitAssessmentAPI(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	server := NewServer(fs, ai.NewAnalyzerFromEnv(), rules.NewEngine(), "static").Routes()
+	server := NewServer(fs, ai.NewOfflineAnalyzer(), rules.NewEngine(), "static").Routes()
 
 	body, _ := json.Marshal(domain.AssessmentRequest{
 		UserID:      "demo-user",
