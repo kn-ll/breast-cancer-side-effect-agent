@@ -22,22 +22,44 @@ type Analyzer struct {
 	apiKey     string
 	baseURL    string
 	model      string
+	provider   string
+	thinking   string
 	httpClient *http.Client
 }
 
 func NewAnalyzerFromEnv() *Analyzer {
-	baseURL := strings.TrimRight(os.Getenv("OPENAI_BASE_URL"), "/")
+	apiKey := os.Getenv("DEEPSEEK_API_KEY")
+	baseURL := strings.TrimRight(os.Getenv("DEEPSEEK_BASE_URL"), "/")
+	model := os.Getenv("DEEPSEEK_MODEL")
+	provider := "deepseek"
+	thinking := getenv("DEEPSEEK_THINKING", "disabled")
+
+	if apiKey == "" && os.Getenv("OPENAI_API_KEY") != "" {
+		apiKey = os.Getenv("OPENAI_API_KEY")
+		baseURL = strings.TrimRight(os.Getenv("OPENAI_BASE_URL"), "/")
+		model = os.Getenv("OPENAI_MODEL")
+		provider = "openai-compatible"
+		thinking = ""
+	}
+	if baseURL == "" && provider == "deepseek" {
+		baseURL = "https://api.deepseek.com"
+	}
 	if baseURL == "" {
 		baseURL = "https://api.openai.com/v1"
 	}
-	model := os.Getenv("OPENAI_MODEL")
+	if model == "" && provider == "deepseek" {
+		model = "deepseek-v4-flash"
+	}
 	if model == "" {
 		model = "gpt-4.1-mini"
 	}
+
 	return &Analyzer{
-		apiKey:  os.Getenv("OPENAI_API_KEY"),
-		baseURL: baseURL,
-		model:   model,
+		apiKey:   apiKey,
+		baseURL:  baseURL,
+		model:    model,
+		provider: provider,
+		thinking: thinking,
 		httpClient: &http.Client{
 			Timeout: 20 * time.Second,
 		},
@@ -46,7 +68,8 @@ func NewAnalyzerFromEnv() *Analyzer {
 
 func NewOfflineAnalyzer() *Analyzer {
 	return &Analyzer{
-		model: "heuristic-fallback",
+		model:    "heuristic-fallback",
+		provider: "offline",
 		httpClient: &http.Client{
 			Timeout: 20 * time.Second,
 		},
@@ -55,6 +78,20 @@ func NewOfflineAnalyzer() *Analyzer {
 
 func (a *Analyzer) Enabled() bool {
 	return a != nil && a.apiKey != ""
+}
+
+func (a *Analyzer) Provider() string {
+	if a == nil || a.provider == "" {
+		return "offline"
+	}
+	return a.provider
+}
+
+func (a *Analyzer) Model() string {
+	if a == nil || a.model == "" {
+		return "heuristic-fallback"
+	}
+	return a.model
 }
 
 func (a *Analyzer) Analyze(ctx context.Context, req domain.AssessmentRequest) domain.AIAnalysis {
@@ -86,7 +123,7 @@ func (a *Analyzer) Analyze(ctx context.Context, req domain.AssessmentRequest) do
 		SeveritySignals:    dedupe(append(parsed.SeveritySignals, fallback.SeveritySignals...)),
 		MissingFields:      dedupe(parsed.MissingFields),
 		FollowUpQuestions:  limitStrings(parsed.FollowUpQuestions, 3),
-		GeneratedBy:        "openai-compatible:" + a.model,
+		GeneratedBy:        a.Provider() + ":" + a.model,
 		GeneratedAt:        time.Now().UTC(),
 	}
 	if result.TemperatureCelsius == nil {
@@ -199,14 +236,27 @@ func (a *Analyzer) GenerateRuleImprovementSuggestion(assessments []domain.Assess
 }
 
 type chatRequest struct {
-	Model       string        `json:"model"`
-	Messages    []chatMessage `json:"messages"`
-	Temperature float64       `json:"temperature"`
+	Model           string          `json:"model"`
+	Messages        []chatMessage   `json:"messages"`
+	Temperature     *float64        `json:"temperature,omitempty"`
+	MaxTokens       int             `json:"max_tokens,omitempty"`
+	ResponseFormat  *responseFormat `json:"response_format,omitempty"`
+	Thinking        *thinkingConfig `json:"thinking,omitempty"`
+	ReasoningEffort string          `json:"reasoning_effort,omitempty"`
+	Stream          bool            `json:"stream"`
 }
 
 type chatMessage struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
+}
+
+type responseFormat struct {
+	Type string `json:"type"`
+}
+
+type thinkingConfig struct {
+	Type string `json:"type"`
 }
 
 type chatResponse struct {
@@ -216,7 +266,7 @@ type chatResponse struct {
 }
 
 func (a *Analyzer) chatJSON(ctx context.Context, system string, user string, target any) error {
-	content, err := a.chatText(ctx, system, user)
+	content, err := a.chat(ctx, system, user, true)
 	if err != nil {
 		return err
 	}
@@ -228,14 +278,33 @@ func (a *Analyzer) chatJSON(ctx context.Context, system string, user string, tar
 }
 
 func (a *Analyzer) chatText(ctx context.Context, system string, user string) (string, error) {
-	body, err := json.Marshal(chatRequest{
+	return a.chat(ctx, system, user, false)
+}
+
+func (a *Analyzer) chat(ctx context.Context, system string, user string, jsonMode bool) (string, error) {
+	temperature := 0.2
+	payload := chatRequest{
 		Model: a.model,
 		Messages: []chatMessage{
 			{Role: "system", Content: system},
 			{Role: "user", Content: user},
 		},
-		Temperature: 0.2,
-	})
+		Temperature: &temperature,
+		MaxTokens:   2048,
+		Stream:      false,
+	}
+	if jsonMode {
+		payload.ResponseFormat = &responseFormat{Type: "json_object"}
+	}
+	if a.Provider() == "deepseek" {
+		payload.Thinking = &thinkingConfig{Type: firstNonEmpty(a.thinking, "disabled")}
+		if payload.Thinking.Type == "enabled" {
+			payload.ReasoningEffort = getenv("DEEPSEEK_REASONING_EFFORT", "high")
+			payload.Temperature = nil
+		}
+	}
+
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return "", err
 	}
@@ -265,6 +334,14 @@ func (a *Analyzer) chatText(ctx context.Context, system string, user string) (st
 		return "", errors.New("chat completion returned no choices")
 	}
 	return strings.TrimSpace(decoded.Choices[0].Message.Content), nil
+}
+
+func getenv(key string, fallback string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	return value
 }
 
 func fallbackAnalyze(req domain.AssessmentRequest) domain.AIAnalysis {

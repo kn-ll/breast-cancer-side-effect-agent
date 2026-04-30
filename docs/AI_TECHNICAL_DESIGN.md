@@ -52,7 +52,7 @@ flowchart TB
 
 - `Frontend`：原生 HTML/CSS/JS，覆盖输入、结果、历史。
 - `HTTP API`：Go `net/http` 实现，无外部依赖。
-- `AI Analyzer`：OpenAI-compatible adapter，有 key 时调用模型，无 key 时 fallback。
+- `AI Analyzer`：DeepSeek OpenAI-compatible adapter，有 key 时调用 `deepseek-v4-flash`，无 key 时 fallback。
 - `Rule Engine`：内置规则表，按优先级输出风险等级。
 - `Safety Review`：检查 AI 文本是否包含不安全建议。
 - `File Store`：本地 JSON 文件，保存评估、事件、协同请求和规则优化建议。
@@ -158,7 +158,7 @@ AI 基于规则结果生成解释，但不新增诊断。
 
 - HTML/CSS/JS
 - Go `net/http`
-- OpenAI-compatible Chat Completions
+- DeepSeek OpenAI-compatible Chat Completions
 - 本地 heuristic fallback
 
 ### 决策

@@ -72,6 +72,8 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"status":       "ok",
 		"ai_enabled":   s.analyzer.Enabled(),
+		"ai_provider":  s.analyzer.Provider(),
+		"ai_model":     s.analyzer.Model(),
 		"rule_version": rules.Version,
 		"now":          time.Now().UTC(),
 	})

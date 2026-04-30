@@ -4,7 +4,7 @@
 
 - Go 1.22+
 - Git
-- 可选：OpenAI-compatible API key
+- 可选：DeepSeek API key
 
 ## 本地运行
 
@@ -26,9 +26,49 @@ http://localhost:8080
 | `PORT` | `8080` | HTTP 端口 |
 | `STORE_PATH` | `data/store.json` | 本地 JSON 存储文件 |
 | `STATIC_DIR` | `internal/httpapi/static` | 前端静态文件目录 |
-| `OPENAI_API_KEY` | 空 | 配置后启用远程 AI |
-| `OPENAI_MODEL` | `gpt-4.1-mini` | 模型名 |
-| `OPENAI_BASE_URL` | `https://api.openai.com/v1` | OpenAI-compatible API base |
+| `DEEPSEEK_API_KEY` | 空 | 配置后启用 DeepSeek AI |
+| `DEEPSEEK_MODEL` | `deepseek-v4-flash` | DeepSeek 模型名 |
+| `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | DeepSeek OpenAI-compatible API base |
+| `DEEPSEEK_THINKING` | `disabled` | DeepSeek 思考模式开关，原型默认非思考模式 |
+| `DEEPSEEK_REASONING_EFFORT` | `high` | 当 `DEEPSEEK_THINKING=enabled` 时生效 |
+| `OPENAI_API_KEY` | 空 | 兼容后备：没有 `DEEPSEEK_API_KEY` 时读取 |
+| `OPENAI_MODEL` | `gpt-4.1-mini` | 兼容后备模型名 |
+| `OPENAI_BASE_URL` | `https://api.openai.com/v1` | 兼容后备 API base |
+
+## DeepSeek 接入
+
+按照 DeepSeek 官方文档：
+
+- OpenAI 格式 base URL：`https://api.deepseek.com`
+- 鉴权：`Authorization: Bearer ${DEEPSEEK_API_KEY}`
+- 模型：`deepseek-v4-flash`
+- JSON Output：请求体设置 `response_format: {"type":"json_object"}`，并在 prompt 中给出 JSON 输出样例
+
+启动：
+
+```bash
+export DEEPSEEK_API_KEY="your_deepseek_api_key"
+export DEEPSEEK_MODEL="deepseek-v4-flash"
+export DEEPSEEK_BASE_URL="https://api.deepseek.com"
+export DEEPSEEK_THINKING="disabled"
+go run ./cmd/server
+```
+
+检查：
+
+```bash
+curl -sS http://localhost:8080/api/healthz
+```
+
+期望看到：
+
+```json
+{
+  "ai_enabled": true,
+  "ai_provider": "deepseek",
+  "ai_model": "deepseek-v4-flash"
+}
+```
 
 ## 测试和构建
 

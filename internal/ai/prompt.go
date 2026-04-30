@@ -16,6 +16,17 @@ const symptomExtractionUserPrompt = `请分析以下副作用描述，并输出 
 - missing_fields: 缺失关键信息数组，例如 temperature_celsius, duration, hydration_status, medication_context
 - follow_up_questions: 最多 3 个中文追问
 
+JSON 输出样例：
+{
+  "summary": "用户昨晚开始发热 38.4°C，伴腹泻和头晕。",
+  "symptoms": ["fever", "diarrhea", "dizziness"],
+  "temperature_celsius": 38.4,
+  "duration": "昨晚",
+  "severity_signals": ["fever_38_plus"],
+  "missing_fields": ["hydration_status"],
+  "follow_up_questions": ["现在是否能正常喝水？尿量是否明显减少？"]
+}
+
 用户描述：
 %s
 

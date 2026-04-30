@@ -17,6 +17,8 @@ curl -sS http://localhost:8080/api/healthz
 ```json
 {
   "ai_enabled": false,
+  "ai_model": "deepseek-v4-flash",
+  "ai_provider": "deepseek",
   "now": "2026-04-30T10:00:00Z",
   "rule_version": "breast-side-effect-rules-v0.1.0",
   "status": "ok"

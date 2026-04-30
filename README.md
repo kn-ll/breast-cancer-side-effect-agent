@@ -33,16 +33,19 @@ http://localhost:8080
 curl -sS http://localhost:8080/api/healthz
 ```
 
-## 启用 AI
+## 启用 DeepSeek AI
 
-未配置 `OPENAI_API_KEY` 时，系统使用本地 heuristic fallback，仍可完整运行。配置后会调用 OpenAI-compatible Chat Completions API。
+未配置 `DEEPSEEK_API_KEY` 时，系统使用本地 heuristic fallback，仍可完整运行。配置后会按照 DeepSeek 官方 OpenAI-compatible Chat Completions API 调用 `deepseek-v4-flash`。
 
 ```bash
-export OPENAI_API_KEY="your_api_key"
-export OPENAI_MODEL="gpt-4.1-mini"
-export OPENAI_BASE_URL="https://api.openai.com/v1"
+export DEEPSEEK_API_KEY="your_deepseek_api_key"
+export DEEPSEEK_MODEL="deepseek-v4-flash"
+export DEEPSEEK_BASE_URL="https://api.deepseek.com"
+export DEEPSEEK_THINKING="disabled"
 go run ./cmd/server
 ```
+
+兼容旧的 OpenAI-compatible 配置：如果没有 `DEEPSEEK_API_KEY`，系统会读取 `OPENAI_API_KEY`、`OPENAI_MODEL`、`OPENAI_BASE_URL`。
 
 可选配置：
 
